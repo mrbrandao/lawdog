@@ -37,8 +37,9 @@ if [ ! -f "$INPUT" ]; then
     exit 1
 fi
 
-"$FFMPEG" -i "$INPUT" \
-    -c:v libvpx -quality good -cpu-used 0 -b:v 500k \
+"$FFMPEG" -v quiet -stats \
+    -i "$INPUT" \
+    -c:v libvpx -quality good -cpu-used 5 -threads 4 -b:v 500k \
     -c:a libvorbis -q:a 4 \
     -y "$OUTPUT"
 
