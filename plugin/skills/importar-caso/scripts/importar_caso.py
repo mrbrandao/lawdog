@@ -7,8 +7,26 @@
 Creates NN-tipo/ dirs, copies/moves files, generates caso.md.
 Idempotent: safe to run twice.
 
+MANIFEST FORMAT (JSON):
+  {
+    "slug": "caso-slug",
+    "movements": [
+      {
+        "seq": "09",          <- PROJUDI sequence number (from PROJUDI history)
+        "type": "decisao-juiz",  <- valid: peticao-inicial, peticao, decisao-juiz,
+                                          manifestacao-reu, intimacao,
+                                          notificacao-extrajudicial
+        "files": ["/path/to/file.pdf"]
+      }
+    ]
+  }
+
+VALID TYPE SLUGS: peticao-inicial, peticao, decisao-juiz, manifestacao-reu,
+  intimacao, notificacao-extrajudicial, contranotificacao-reu
+
 Usage:
     uv run importar_caso.py --slug SLUG --cases-dir DIR --manifest JSON
+    uv run importar_caso.py --help
 """
 import argparse
 import json
@@ -120,12 +138,20 @@ def generate_caso_md(slug: str, movements: list[dict]) -> str:
 """
 
 
+VALID_TYPES = {
+    "peticao-inicial", "peticao", "decisao-juiz", "manifestacao-reu",
+    "intimacao", "notificacao-extrajudicial", "contranotificacao-reu",
+}
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__,
         formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--slug", required=True)
-    parser.add_argument("--cases-dir", required=True)
-    parser.add_argument("--manifest", required=True)
+    parser.add_argument("--slug", required=True, help="Case slug (kebab-case)")
+    parser.add_argument("--cases-dir", required=True, help="LAWDOG_CASES_DIR path")
+    parser.add_argument("--manifest", required=True,
+        help="Path to manifest JSON. Tip: save inside the case dir for persistence "
+             "(e.g. $LAWDOG_CASES_DIR/<slug>/.lawdog-import.json)")
     args = parser.parse_args()
 
     cases_dir = Path(args.cases_dir)
@@ -140,6 +166,22 @@ def main() -> None:
         manifest = json.load(f)
 
     movements: list[dict] = manifest.get("movements", [])
+
+    # Validate type slugs before doing anything
+    errors = []
+    for mov in movements:
+        t = mov.get("type", "")
+        if t not in VALID_TYPES:
+            errors.append(
+                f"  seq={mov.get('seq','?')}: invalid type '{t}'. "
+                f"Valid: {', '.join(sorted(VALID_TYPES))}"
+            )
+    if errors:
+        print("ERROR: Invalid movement types in manifest:", file=sys.stderr)
+        for e in errors:
+            print(e, file=sys.stderr)
+        sys.exit(1)
+
     print(f"Applying: {len(movements)} movement(s) for '{args.slug}'")
     case_dir.mkdir(parents=True, exist_ok=True)
 

@@ -64,13 +64,36 @@ Wait for explicit confirmation before any file operation.
 
 ### Phase 4 — Apply via script
 
-Write JSON manifest, invoke script:
+Write the manifest **inside the case directory** (not /tmp — survives reboots):
+
+```bash
+CASES_DIR="${LAWDOG_CASES_DIR:-$HOME/lawdog-cases}"
+MANIFEST="$CASES_DIR/<case-slug>/.lawdog-import.json"
+mkdir -p "$CASES_DIR/<case-slug>"
+```
+
+Manifest format — `seq` MUST be the real PROJUDI sequence number:
+
+```json
+{
+  "slug": "<case-slug>",
+  "movements": [
+    {"seq": "09", "type": "decisao-juiz", "files": ["/abs/path/decisao.pdf"]},
+    {"seq": "12", "type": "peticao", "files": ["/abs/path/emenda.pdf"]}
+  ]
+}
+```
+
+Valid `type` values: `peticao-inicial`, `peticao`, `decisao-juiz`,
+`manifestacao-reu`, `intimacao`, `notificacao-extrajudicial`, `contranotificacao-reu`
+
+Run the script (it validates type slugs and rejects unknown ones):
 
 ```bash
 uv run "${CLAUDE_SKILL_DIR}/scripts/importar_caso.py" \
     --slug "<case-slug>" \
-    --cases-dir "${LAWDOG_CASES_DIR:-$HOME/lawdog-cases}" \
-    --manifest "/tmp/lawdog_manifest_<slug>.json"
+    --cases-dir "$CASES_DIR" \
+    --manifest "$MANIFEST"
 ```
 
 ## Gotchas
@@ -80,10 +103,16 @@ uv run "${CLAUDE_SKILL_DIR}/scripts/importar_caso.py" \
 - **caso.md NOT overwritten** if it already exists.
 - **External files COPIED** (originals preserved). **Internal files MOVED** (no duplicates).
 - **⚠️ mandatory before confirmation question** — must appear immediately before it.
-- **Directory naming is ALWAYS `{NN}-{tipo}/`** — `NN` is the PROJUDI sequence number,
-  NOT a descriptive name. `09-decisao-juiz/` is correct. `decisao-emenda-inicial/` is
-  WRONG. Each PROJUDI sequence is its own directory — never group multiple seqs together.
-  Valid type slugs: `peticao-inicial`, `peticao`, `decisao-juiz`, `manifestacao-reu`, `intimacao`.
+- **DO NOT read the script source before running it.** Run `--help` first to see the
+  interface. Reading the source wastes context window and is unnecessary — the script
+  is a black box: give it the correct flags and it works.
+- **`seq` in manifest = PROJUDI sequence number**, NOT an internal counter. Check the
+  PROJUDI case history for the real numbers (9, 12, 15, 16...). Using `01, 02, 03`
+  creates wrong directory names.
+- **Directory naming is ALWAYS `{NN}-{tipo}/`** — `NN` is the PROJUDI seq number.
+  `09-decisao-juiz/` is correct. `decisao-emenda-inicial/` is WRONG.
+  Each PROJUDI sequence gets its own directory — never group multiple seqs together.
 - **One seq = one directory.** Seq 9 (judge decision) and seq 12 (new petition) are TWO
-  separate directories even if about the same legal topic. The description goes in the
-  filename inside the directory, not in the directory name itself.
+  separate directories even if they're about the same topic.
+- **Save manifest in case dir, not /tmp/** — use `$CASES_DIR/<slug>/.lawdog-import.json`
+  so it survives reboots and stays with the case.
