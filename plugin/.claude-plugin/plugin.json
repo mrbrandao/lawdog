@@ -1,7 +1,7 @@
 {
   "name": "lawdog",
   "description": "AI legal assistant plugin with skills for Brazilian court workflows: video conversion, document handling, and procedural guidance.",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "author": {
     "name": "mrbrandao"
   },

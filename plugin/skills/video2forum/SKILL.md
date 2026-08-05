@@ -34,7 +34,7 @@ One or more file paths or glob patterns. Examples:
 Each input file converted to `.webm` in the same directory, same
 base name, overwriting if exists.
 
-## Steps
+## Fluxo
 
 1. **ffmpeg setup** — Scan the raw args for a token that looks like an
    ffmpeg binary path (ends with `/ffmpeg` or equals `ffmpeg`). If found:

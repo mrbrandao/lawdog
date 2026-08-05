@@ -1,0 +1,55 @@
+\documentclass[$if(fontsize)$$fontsize$$else$12pt$endif$,a4paper]{article}
+
+% Encoding and fonts — lmodern must precede fontenc to use its own ec-lm* fonts
+\usepackage{lmodern}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+% microtype improves justification; omit if not installed (TeX Live minimal)
+\IfFileExists{microtype.sty}{\usepackage{microtype}}{}
+
+% Hyphenation: load babel only when a language is explicitly requested,
+% otherwise the missing babel-portuges package produces a non-fatal error.
+$if(lang)$
+\usepackage[$lang$]{babel}
+$endif$
+
+% Judicial margins for A4 (Brazil standard)
+\usepackage[left=3cm,right=2cm,top=2.5cm,bottom=2cm]{geometry}
+
+% Line spacing
+\usepackage{setspace}
+\onehalfspacing
+\setlength{\parindent}{1.5cm}
+\setlength{\parskip}{0pt}
+
+% WIDOW AND ORPHAN CONTROL
+% 10000 = maximum penalty = never allow isolated lines.
+\widowpenalty=10000
+\clubpenalty=10000
+\displaywidowpenalty=10000
+
+% No section numbering (judicial documents don't use it)
+\setcounter{secnumdepth}{0}
+
+% Required by pandoc 3.x for compact lists
+\providecommand{\tightlist}{\setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+% Plain page style (page number at bottom center only)
+\pagestyle{plain}
+
+$for(header-includes)$
+$header-includes$
+$endfor$
+
+\begin{document}
+
+$if(title)$
+\begin{center}
+  {\large\textbf{$title$}}
+\end{center}
+\bigskip
+$endif$
+
+$body$
+
+\end{document}

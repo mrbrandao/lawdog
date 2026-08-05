@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch(https://www.planalto.gov.br/*)",
+      "WebFetch(https://www.tjpr.jus.br/*)",
+      "WebFetch(https://projudi.tjpr.jus.br/*)",
+      "WebFetch(https://legis.senado.leg.br/*)",
+      "WebFetch(https://www2.camara.leg.br/*)"
+    ]
+  }
+}
