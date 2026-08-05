@@ -2,11 +2,11 @@
   "permissions": {
     "allow": [
       "WebSearch",
-      "WebFetch(https://www.planalto.gov.br/*)",
-      "WebFetch(https://www.tjpr.jus.br/*)",
-      "WebFetch(https://projudi.tjpr.jus.br/*)",
-      "WebFetch(https://legis.senado.leg.br/*)",
-      "WebFetch(https://www2.camara.leg.br/*)"
+      "WebFetch(domain:www.planalto.gov.br)",
+      "WebFetch(domain:www.tjpr.jus.br)",
+      "WebFetch(domain:projudi.tjpr.jus.br)",
+      "WebFetch(domain:legis.senado.leg.br)",
+      "WebFetch(domain:www2.camara.leg.br)"
     ]
   }
 }

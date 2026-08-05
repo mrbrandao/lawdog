@@ -18,15 +18,16 @@ SETTINGS="$CLAUDE_DIR/settings.json"
 
 mkdir -p "$CLAUDE_DIR"
 
+# Use domain: format — NOT URL format (https://host/*) which Claude Code rejects
 PERMISSIONS_JSON='{
   "permissions": {
     "allow": [
       "WebSearch",
-      "WebFetch(https://www.planalto.gov.br/*)",
-      "WebFetch(https://www.tjpr.jus.br/*)",
-      "WebFetch(https://projudi.tjpr.jus.br/*)",
-      "WebFetch(https://legis.senado.leg.br/*)",
-      "WebFetch(https://www2.camara.leg.br/*)"
+      "WebFetch(domain:www.planalto.gov.br)",
+      "WebFetch(domain:www.tjpr.jus.br)",
+      "WebFetch(domain:projudi.tjpr.jus.br)",
+      "WebFetch(domain:legis.senado.leg.br)",
+      "WebFetch(domain:www2.camara.leg.br)"
     ]
   }
 }'
@@ -40,6 +41,15 @@ import json, sys
 
 new_entries = [
     "WebSearch",
+    "WebFetch(domain:www.planalto.gov.br)",
+    "WebFetch(domain:www.tjpr.jus.br)",
+    "WebFetch(domain:projudi.tjpr.jus.br)",
+    "WebFetch(domain:legis.senado.leg.br)",
+    "WebFetch(domain:www2.camara.leg.br)",
+]
+
+# Also clean up any old URL-format entries that may have been installed previously
+old_url_entries = [
     "WebFetch(https://www.planalto.gov.br/*)",
     "WebFetch(https://www.tjpr.jus.br/*)",
     "WebFetch(https://projudi.tjpr.jus.br/*)",
@@ -55,6 +65,9 @@ except (json.JSONDecodeError, FileNotFoundError):
 
 perms = data.setdefault("permissions", {})
 allow = perms.setdefault("allow", [])
+
+# Remove old URL-format entries
+allow[:] = [e for e in allow if e not in old_url_entries]
 
 added = []
 for entry in new_entries:
