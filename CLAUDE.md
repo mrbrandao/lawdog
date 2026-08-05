@@ -52,7 +52,8 @@ AGENTS.md           ← persona core (who lawdog is — ~100 lines, constitution
         ├── doc2docx/      markdown → editable DOCX (inline pandoc)
         ├── juntada/       evidence orchestrator (parallel dispatch, batch naming)
         ├── movimentacao/  register court movements (PROJUDI PDF → caso.md update)
-        └── importar-caso/ ingest existing unorganized cases (batch 20, iterative table)
+        ├── importar-caso/ ingest existing unorganized cases (batch 20, iterative table)
+        └── peticao/       draft petition: rascunho → refinement → official PDF via doc2pdf
 ```
 
 **Principle:** AGENTS.md defines character. Protocols define behavior. Skills

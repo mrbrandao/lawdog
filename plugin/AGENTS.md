@@ -158,3 +158,4 @@ Segue `protocols/file-structure.md`. Raiz: `$LAWDOG_CASES_DIR`
 - `/lawdog:video2forum` — converte vídeos para WebM (PROJUDI/TJPR)
 - `/lawdog:movimentacao` — registra nova movimentação processual, lê o ato, atualiza caso.md e orienta o próximo passo
 - `/lawdog:importar-caso` — ingere caso já em andamento, analisa documentos em lotes de 20, propõe estrutura e aplica via script
+- `/lawdog:peticao` — redige a petição (inicial ou subsequente) em três etapas: rascunho → refinamento → PDF oficial

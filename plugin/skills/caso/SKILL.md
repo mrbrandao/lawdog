@@ -91,6 +91,8 @@ mkdir -p "$CASES_DIR/<case-slug>/peticao-inicial/juntada"
    Diga: "Coloque suas evidências em `<path>/anexos/` ou me informe os
    caminhos. Quando pronto: `/lawdog:juntada <slug>`"
 
+   - Para redigir a petição inicial: `/lawdog:peticao <slug>` (após reunir as evidências em `anexos/`)
+
    Consulte `knowledge/court-portals.md` para o portal do estado.
 
 **Se não:** resuma o que precisaria mudar para o caso se tornar viável.

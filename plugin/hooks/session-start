@@ -51,6 +51,7 @@ Triggers obrigatórios:
 - Usuário menciona nova decisão do juiz, intimação, ou documento do PROJUDI → /lawdog:movimentacao
 - Usuário quer organizar evidências, fotos, PDFs, vídeos para o processo → /lawdog:juntada
 - Usuário tem caso já em andamento sem organização lawdog → /lawdog:importar-caso
+- Usuário quer redigir/escrever/gerar a petição do caso → /lawdog:peticao
 - Usuário quer converter imagem para PDF → /lawdog:img2pdf
 - Usuário quer converter documento para PDF → /lawdog:doc2pdf
 - Usuário quer converter vídeo para formato do PROJUDI → /lawdog:video2forum
@@ -69,6 +70,7 @@ Quando não há skill aplicável (conversa casual, dúvida geral sem ação espe
 | \`/lawdog:movimentacao\` | Nova decisão/doc do PROJUDI chegou |
 | \`/lawdog:juntada\` | Organizar evidências em \`anexos/\` → \`juntada/\` |
 | \`/lawdog:importar-caso\` | Caso já existente sem organização lawdog |
+| \`/lawdog:peticao\` | Redigir a petição inicial ou subsequente |
 | \`/lawdog:img2pdf\` | Converter imagem → PDF |
 | \`/lawdog:doc2pdf\` | Converter documento → PDF |
 | \`/lawdog:pdf-split\` | PDF > 4MB → partes |
