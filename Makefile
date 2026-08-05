@@ -1,7 +1,7 @@
-.PHONY: test test-skills test-setup test-python
+.PHONY: test test-skills test-setup test-python test-importar-caso
 
 # Run all test suites
-test: test-skills test-setup test-python
+test: test-skills test-setup test-python test-importar-caso
 	@echo ""
 	@echo "All test suites passed."
 
@@ -23,3 +23,7 @@ test-python:
 	        plugin/skills/pdf-split/tests/ \
 	        plugin/skills/juntada/tests/ \
 	        -v --tb=short
+
+test-importar-caso:
+	@echo "=== Testing importar-caso ==="
+	@pytest plugin/skills/importar-caso/tests/ -v --tb=short
