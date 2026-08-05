@@ -80,3 +80,10 @@ uv run "${CLAUDE_SKILL_DIR}/scripts/importar_caso.py" \
 - **caso.md NOT overwritten** if it already exists.
 - **External files COPIED** (originals preserved). **Internal files MOVED** (no duplicates).
 - **⚠️ mandatory before confirmation question** — must appear immediately before it.
+- **Directory naming is ALWAYS `{NN}-{tipo}/`** — `NN` is the PROJUDI sequence number,
+  NOT a descriptive name. `09-decisao-juiz/` is correct. `decisao-emenda-inicial/` is
+  WRONG. Each PROJUDI sequence is its own directory — never group multiple seqs together.
+  Valid type slugs: `peticao-inicial`, `peticao`, `decisao-juiz`, `manifestacao-reu`, `intimacao`.
+- **One seq = one directory.** Seq 9 (judge decision) and seq 12 (new petition) are TWO
+  separate directories even if about the same legal topic. The description goes in the
+  filename inside the directory, not in the directory name itself.

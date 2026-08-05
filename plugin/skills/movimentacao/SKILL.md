@@ -83,6 +83,9 @@ and whether it is improrrogável, what the user must prepare or do next.
   irrecoverable. Always state it first, in bold, with the exact date if calculable.
 - **Never create `juntada/` for judge or defendant movements** — only `docs/`
   is needed. `juntada/` is only for user filings (petições).
+- **Directory naming is ALWAYS `{NN}-{tipo}/`** — `NN` is the PROJUDI sequence number.
+  Use `09-decisao-juiz/` not `decisao-emenda-inicial/`. The description belongs in the
+  filename inside the directory, not in the directory name itself.
 - **If caso.md does not exist** for the given slug, instruct the user to open
   the case first with `/lawdog:caso` before registering movements.
 - **Future agent note:** this skill is designed for manual PDF injection. When

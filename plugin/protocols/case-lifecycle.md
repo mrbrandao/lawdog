@@ -50,11 +50,19 @@ When a new movement is received (PDF from PROJUDI or user description):
 
 1. Determine the type from content: `decisao-juiz`, `manifestacao-reu`,
    `intimacao`, `peticao`, or `contranotificacao-reu`
-2. Determine the next sequential number: read `caso.md` Movimentações table,
-   use the next number (or the PROJUDI sequence number if known)
-3. Create the directory: `NN-tipo/docs/` (add `anexos/` and `juntada/` only
+
+2. **Determine the directory name — CRITICAL RULE:**
+   - **ALWAYS use `{SEQ}-{tipo}/`** where SEQ is the PROJUDI sequence number
+   - If the PROJUDI seq number is known (from the PDF header, user, or PROJUDI history): use it exactly
+   - If unknown: use the next integer after the highest existing seq in `caso.md`
+   - **NEVER use descriptive names** like `decisao-emenda/` or `habilitacao-requerida/`
+   - Each PROJUDI movement gets its OWN directory — never group multiple seqs together
+   - Type slugs: `decisao-juiz`, `peticao`, `manifestacao-reu`, `intimacao`
+   - Example: seq 9 judge decision → `09-decisao-juiz/`, seq 20 defendant → `20-manifestacao-reu/`
+
+3. Create the directory: `{SEQ}-{tipo}/docs/` (add `anexos/` and `juntada/` only
    for `peticao` type)
-4. Copy or move the PDF to `NN-tipo/docs/`
+4. Copy or move the PDF to `{SEQ}-{tipo}/docs/`
 5. Add a row to `caso.md` Movimentações table
 6. Update `caso.md` Estado atual: fase, última movimentação, prazo, ação pendente
 
