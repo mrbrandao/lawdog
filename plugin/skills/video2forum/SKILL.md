@@ -13,7 +13,7 @@ compatibility: >-
 allowed-tools: Bash
 metadata:
   author: mrbrandao
-  version: "1.0"
+  version: "1.1"
 ---
 
 ## Trigger
@@ -36,12 +36,12 @@ base name, overwriting if exists.
 
 ## Steps
 
-1. **ffmpeg setup (first run)** — If `FFMPEG` is not set, ask:
-   > "Which ffmpeg to use? Enter a path or press Enter to
-   > auto-detect via PATH."
-   - User provides path → `export FFMPEG=<path>` before proceeding.
-   - User presses Enter → leave unset; script auto-detects via
-     `which ffmpeg`.
+1. **ffmpeg setup** — Scan the raw args for a token that looks like an
+   ffmpeg binary path (ends with `/ffmpeg` or equals `ffmpeg`). If found:
+   - `export FFMPEG=<path>` and remove that token from the file list.
+   If no such token is present, leave `FFMPEG` unset — the script
+   auto-detects via `which ffmpeg` and prints a clear error if not found.
+   **Never ask the user.**
 
 2. **Expand** glob(s) into a concrete file list. Abort with a clear
    message if no files matched.
@@ -49,16 +49,18 @@ base name, overwriting if exists.
 3. **Derive output path** for each file: same directory, same base
    name, extension → `.webm`.
 
-4. **Convert** each file using the bundled script:
+4. **Convert** all files in parallel — launch each conversion as a
+   background task (`run_in_background: true`). Use:
    ```bash
    bash "${CLAUDE_SKILL_DIR}/scripts/video2forum.sh" \
      -i "<input>" -o "<output>"
    ```
-   With custom ffmpeg exported:
+   With custom ffmpeg:
    ```bash
-   FFMPEG="$FFMPEG" bash "${CLAUDE_SKILL_DIR}/scripts/video2forum.sh"\
+   FFMPEG="$FFMPEG" bash "${CLAUDE_SKILL_DIR}/scripts/video2forum.sh" \
      -i "<input>" -o "<output>"
    ```
+   Wait for all background tasks to finish before proceeding to Step 5.
 
 5. **Report** after all conversions: total count, each
    input → output pair, output file size.
