@@ -26,6 +26,9 @@ Current version: v0.4.0 (Dr. Andre LawDog identity, case lifecycle, importar-cas
 ## Architecture
 
 ```
+hooks/              ← plugin hooks (Claude Code, Cursor, Copilot CLI)
+    └── session-start   SessionStart: injects Dr. LawDog context, skills table,
+                        model selection guidance, active case detection
 AGENTS.md           ← persona core (who lawdog is — ~100 lines, constitution)
     │
     ├── protocols/  ← behavioral contracts (how lawdog acts)
@@ -359,6 +362,18 @@ Python: `int(os.environ.get("LAWDOG_PDF_SIZE", 4 * 1024 * 1024))`
 7. Update docs/BACKLOG.md with anything left pending
 8. Update this CLAUDE.md if the architecture changed (MANDATORY — see rule below)
 ```
+
+## Model selection guidance (for sub-agent dispatch)
+
+| Model | Tasks |
+|---|---|
+| **Haiku** | File ops (img2pdf, video2forum, pdf-split), directory creation, juntada script, import script |
+| **Sonnet** | Legal triage, adversarial simulation, evidence analysis, movimentacao interpretation, caso intake |
+| **Opus** | Full petition drafting, complex case strategy, deep adversarial simulation, judgment calls |
+
+The session-start hook injects this guidance at every session start.
+
+---
 
 ## MANDATORY: Update CLAUDE.md after every feature
 
