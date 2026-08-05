@@ -1,7 +1,7 @@
-.PHONY: test test-skills test-setup test-python test-importar-caso
+.PHONY: test test-skills test-setup test-python test-importar-caso test-video2forum
 
 # Run all test suites
-test: test-skills test-setup test-python test-importar-caso
+test: test-skills test-setup test-python test-importar-caso test-video2forum
 	@echo ""
 	@echo "All test suites passed."
 
@@ -28,3 +28,7 @@ test-python:
 test-importar-caso:
 	@echo "=== Testing importar-caso ==="
 	@uv run pytest plugin/skills/importar-caso/tests/ -v --tb=short
+
+test-video2forum:
+	@echo "=== Testing video2forum ==="
+	@bash plugin/skills/video2forum/tests/test_video2forum.sh
