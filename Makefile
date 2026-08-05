@@ -18,12 +18,13 @@ test-setup:
 # Run per-skill pytest suites (each skill owns its tests)
 test-python:
 	@echo "=== Running per-skill Python tests ==="
-	@pytest plugin/skills/img2pdf/tests/ \
-	        plugin/skills/doc2pdf/tests/ \
-	        plugin/skills/pdf-split/tests/ \
-	        plugin/skills/juntada/tests/ \
-	        -v --tb=short
+	@uv run pytest plugin/skills/img2pdf/tests/ \
+	              plugin/skills/doc2pdf/tests/ \
+	              plugin/skills/pdf-split/tests/ \
+	              plugin/skills/juntada/tests/ \
+	              plugin/skills/importar-caso/tests/ \
+	              -v --tb=short
 
 test-importar-caso:
 	@echo "=== Testing importar-caso ==="
-	@pytest plugin/skills/importar-caso/tests/ -v --tb=short
+	@uv run pytest plugin/skills/importar-caso/tests/ -v --tb=short
