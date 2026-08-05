@@ -1,7 +1,7 @@
 {
   "name": "lawdog",
-  "description": "AI legal assistant plugin with skills for Brazilian court workflows: video conversion, document handling, and procedural guidance.",
-  "version": "0.3.0",
+  "description": "Dr. Andre LawDog — AI legal assistant for Brazilian JEC court workflows. Case management, evidence organization, document production, and full judicial lifecycle support.",
+  "version": "0.4.0",
   "author": {
     "name": "mrbrandao"
   },

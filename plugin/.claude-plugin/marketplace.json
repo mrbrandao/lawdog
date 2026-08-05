@@ -1,0 +1,21 @@
+{
+  "name": "lawdog-marketplace",
+  "description": "Lawdog — AI legal assistant for Brazilian JEC court workflows",
+  "owner": {
+    "name": "mrbrandao"
+  },
+  "plugins": [
+    {
+      "name": "lawdog",
+      "description": "Dr. Andre LawDog — advogado e magistrado para o JEC. Skills para gestão de casos, evidências, documentos judiciais e ciclo de vida processual no PROJUDI.",
+      "version": "0.4.0",
+      "source": "./",
+      "author": {
+        "name": "mrbrandao"
+      },
+      "homepage": "https://github.com/mrbrandao/lawdog",
+      "repository": "https://github.com/mrbrandao/lawdog",
+      "license": "MIT"
+    }
+  ]
+}
