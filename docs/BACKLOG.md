@@ -14,7 +14,7 @@ Quatro sub-projetos independentes, a serem executados nesta ordem:
 | A | WebSearch pré-aprovado + lola.yaml hook | ✅ Concluído (2026-06-02) | — |
 | B | Ciclo de vida do caso (ping-pong judicial) | ✅ Concluído (2026-06-04) | — |
 | C | Notificação extrajudicial | ✅ Concluído (2026-06-04) | — |
-| D | Ingestão de casos existentes | **Em progresso** | B ✅ |
+| D | Ingestão de casos existentes | ✅ Concluído (2026-06-04) | B ✅ |
 
 Cada sub-projeto tem seu próprio spec → plano → implementação.
 Atualizar esta tabela ao concluir cada um.

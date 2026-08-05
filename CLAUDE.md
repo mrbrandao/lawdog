@@ -17,8 +17,9 @@ cases in the JEC (Juizado Especial Cível — small claims court) without a lawy
 Lawdog acts as an experienced lawyer with magistrate background — knows CC, CDC,
 Lei 9.099/95 and how a judge evaluates a case.
 
-Active development branch: `improve-video2forum`
+Active development branch: `main` (merged, all v0.4.0 work complete)
 Main branch: `main`
+Current version: v0.4.0 (Dr. Andre LawDog identity, case lifecycle, importar-caso)
 
 ---
 
@@ -39,14 +40,16 @@ AGENTS.md           ← persona core (who lawdog is — ~100 lines, constitution
     │   └── court-portals.md       TJ/PROJUDI by state (PR complete, others pending)
     │
     └── skills/     ← invocable skills (/lawdog:<name>)
-        ├── caso/          full case intake + directory creation
+        ├── caso/          full case intake + Step 0 state detection + importar-caso redirect
         ├── fetch-law/     fetch updated article: WebFetch → fallback WebSearch
         ├── video2forum/   video → WebM (PROJUDI/TJPR)
         ├── img2pdf/       image → PDF (PEP 723, pillow-heif, quality reduction)
         ├── doc2pdf/       document → PDF via pandoc+pdflatex or LibreOffice
         ├── pdf-split/     PDF > LAWDOG_PDF_SIZE → parts (document PDFs only)
         ├── doc2docx/      markdown → editable DOCX (inline pandoc)
-        └── juntada/       evidence orchestrator (parallel dispatch, batch naming)
+        ├── juntada/       evidence orchestrator (parallel dispatch, batch naming)
+        ├── movimentacao/  register court movements (PROJUDI PDF → caso.md update)
+        └── importar-caso/ ingest existing unorganized cases (batch 20, iterative table)
 ```
 
 **Principle:** AGENTS.md defines character. Protocols define behavior. Skills
@@ -249,16 +252,25 @@ Never copy an article without verifying at planalto.gov.br. Always include URL a
 ## Case file structure
 
 Defined in `plugin/protocols/file-structure.md` — read before any case file operation.
+Case lifecycle governed by `plugin/protocols/case-lifecycle.md`.
 
 ```
 $LAWDOG_CASES_DIR/          # env var, default ~/lawdog-cases
 └── <case-slug>/
-    ├── caso.md
-    └── <petition>/         # peticao-inicial/, peticao-02/, ...
-        ├── docs/           # editable originals (.md, .docx) — never deleted
-        ├── anexos/         # staging: user drops evidence here
-        └── juntada/        # organized, numbered, JEC-ready for upload
+    ├── caso.md             # living case diary: Partes, Timeline, Estado atual, Movimentações
+    ├── 00a-notificacao-extrajudicial/   # optional pre-judicial step
+    ├── 00b-contranotificacao-reu/       # optional extrajudicial response
+    ├── 01-peticao-inicial/   # NN-tipo/ pattern — mirrors PROJUDI seq numbers
+    │   ├── docs/             # editable originals (.md, .docx) — never deleted
+    │   ├── anexos/           # staging: user drops evidence here
+    │   └── juntada/          # organized, numbered, JEC-ready for upload
+    ├── 02-decisao-juiz/      # judge act — docs/ only (no juntada/)
+    ├── 03-manifestacao-reu/  # defendant response — docs/ only
+    └── 04-peticao/           # subsequent filing — docs/ + anexos/ + juntada/
 ```
+
+**Movement type reference:** see `protocols/file-structure.md` → "Movement type reference" table.
+**00x prefix** = pre-judicial phase. **NN numbers** = judicial phase (mirrors PROJUDI seq).
 
 ### Evidence file movement (juntada skill)
 
@@ -343,6 +355,29 @@ Python: `int(os.environ.get("LAWDOG_PDF_SIZE", 4 * 1024 * 1024))`
 3. Approve spec → /superpowers:writing-plans
 4. Execute → /superpowers:subagent-driven-development
 5. make test before every commit
-6. Update docs/BACKLOG.md with anything left pending
-7. Update this CLAUDE.md if the architecture changed
+6. git push bare main after every commit (safety — never push to upstream/GitHub)
+7. Update docs/BACKLOG.md with anything left pending
+8. Update this CLAUDE.md if the architecture changed (MANDATORY — see rule below)
 ```
+
+## MANDATORY: Update CLAUDE.md after every feature
+
+**This is a hard rule.** After adding any new skill, protocol, knowledge file,
+or significant behavior change:
+
+1. Update the `## Architecture` tree in this file to show the new skill/file
+2. Update `## Case file structure` if directory conventions changed
+3. Update `## Known bugs` if bugs were fixed or introduced
+4. Update the version/branch line at the top
+
+**Why:** CLAUDE.md is the AI's memory across sessions. If it is not updated,
+the next session starts without knowing what was built. The specs in
+`docs/superpowers/specs/` and plans in `docs/superpowers/plans/` are also
+valuable context — reference them in CLAUDE.md when they describe
+implemented features.
+
+**Session end checklist:**
+- [ ] CLAUDE.md architecture section reflects current skills
+- [ ] BACKLOG.md updated with completed items and new pending items
+- [ ] `make test` passes
+- [ ] Committed and pushed to `bare`
