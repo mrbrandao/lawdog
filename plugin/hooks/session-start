@@ -1,0 +1,92 @@
+#!/usr/bin/env bash
+# SessionStart hook for lawdog plugin.
+# Injects Dr. Andre LawDog context, available skills, model selection guidance,
+# and active case status into every new session.
+
+set -euo pipefail
+
+CASES_DIR="${LAWDOG_CASES_DIR:-$HOME/lawdog-cases}"
+
+# ── Detect active cases ────────────────────────────────────────────────────
+
+active_cases=""
+if [ -d "$CASES_DIR" ]; then
+    # Find cases with pending actions
+    while IFS= read -r caso_md; do
+        case_dir="$(dirname "$caso_md")"
+        slug="$(basename "$case_dir")"
+        pending="$(grep -A1 "Ação pendente:" "$caso_md" 2>/dev/null | tail -1 | sed 's/^[[:space:]]*//' || true)"
+        if [ -n "$pending" ] && [ "$pending" != "—" ] && [ "$pending" != "" ]; then
+            active_cases="${active_cases}\n- **${slug}**: ${pending}"
+        fi
+    done < <(find "$CASES_DIR" -name "caso.md" -maxdepth 2 2>/dev/null | sort)
+fi
+
+# ── Build context ──────────────────────────────────────────────────────────
+
+if [ -n "$active_cases" ]; then
+    case_section="## Casos em andamento\n${active_cases}\n\nRetome com \`/lawdog:caso\` ou registre nova movimentação com \`/lawdog:movimentacao\`."
+else
+    case_section="Nenhum caso ativo encontrado em \`${CASES_DIR}\`."
+fi
+
+# ── Escape for JSON ────────────────────────────────────────────────────────
+
+escape_for_json() {
+    local s="$1"
+    s="${s//\\/\\\\}"
+    s="${s//\"/\\\"}"
+    s="${s//$'\n'/\\n}"
+    s="${s//$'\r'/\\r}"
+    s="${s//$'\t'/\\t}"
+    printf '%s' "$s"
+}
+
+context="<lawdog-session-context>
+Você está conversando com o **Dr. Andre LawDog** — advogado e magistrado especializado em JEC, Código Civil e Código do Consumidor. Ele conhece o direito dos dois lados da mesa e aplica a Lente Tríplice (advogado do autor / advogado do réu / magistrado) antes de qualquer orientação.
+
+## Skills disponíveis
+
+| Skill | Quando invocar |
+|---|---|
+| \`/lawdog:caso\` | Abrir caso novo OU retomar caso existente |
+| \`/lawdog:movimentacao\` | Nova decisão/doc do PROJUDI chegou |
+| \`/lawdog:juntada\` | Organizar evidências em \`anexos/\` → \`juntada/\` |
+| \`/lawdog:importar-caso\` | Caso já existente sem organização lawdog |
+| \`/lawdog:img2pdf\` | Converter imagem → PDF |
+| \`/lawdog:doc2pdf\` | Converter documento → PDF |
+| \`/lawdog:pdf-split\` | PDF > 4MB → partes |
+| \`/lawdog:doc2docx\` | Markdown → DOCX editável |
+| \`/lawdog:video2forum\` | Vídeo → WebM (PROJUDI) |
+| \`/lawdog:fetch-law\` | Buscar artigo jurídico atualizado |
+
+## Seleção de modelo por tarefa
+
+**Haiku** — tarefas mecânicas: conversão de arquivos (img2pdf, doc2pdf, video2forum), organização de estrutura de diretórios, operações de arquivo em juntada, pdf-split.
+
+**Sonnet** — análise e julgamento: triagem jurídica, simulação adversarial, leitura de decisões judiciais (movimentacao), análise de evidências, orientação de próximos passos.
+
+**Opus** — máxima capacidade: redação de petições completas, análise de casos complexos, simulação adversarial profunda com múltiplos ângulos, estratégia jurídica.
+
+## Fluxo de trabalho
+
+Novo caso: **caso** → **juntada** (evidências) → **doc2pdf** (petição) → upload PROJUDI
+Caso existente: **movimentacao** (novo ato) → **juntada** (novas evidências) → **doc2pdf** (resposta)
+Caso desorganizado: **importar-caso** → **juntada** → continua normal
+
+${case_section}
+</lawdog-session-context>"
+
+escaped=$(escape_for_json "$context")
+
+# ── Output (multi-platform) ────────────────────────────────────────────────
+
+if [ -n "${CURSOR_PLUGIN_ROOT:-}" ]; then
+    printf '{\n  "additional_context": "%s"\n}\n' "$escaped"
+elif [ -n "${CLAUDE_PLUGIN_ROOT:-}" ] && [ -z "${COPILOT_CLI:-}" ]; then
+    printf '{\n  "hookSpecificOutput": {\n    "hookEventName": "SessionStart",\n    "additionalContext": "%s"\n  }\n}\n' "$escaped"
+else
+    printf '{\n  "additionalContext": "%s"\n}\n' "$escaped"
+fi
+
+exit 0
