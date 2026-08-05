@@ -5,6 +5,225 @@ Melhorias identificadas, decisões pendentes e ideias para sessões futuras.
 
 ---
 
+## Problemas identificados em sessão real — 2026-06-08/09
+
+**Contexto:** Sessão de importação do caso `obra-irregular-sobrado04` e redação da
+petição de novos fatos com prazo real (protocolar no fórum no dia seguinte).
+
+---
+
+### P1. Template LaTeX — múltiplos problemas de formatação
+
+**Status:** corrigido nesta sessão — `base-legal.latex` atualizado em produção
+**Identificado em:** 2026-06-08
+
+**Mudanças aplicadas ao `plugin/templates/base-legal.latex` (diff resumido):**
+
+```diff
+- \usepackage{lmodern}                    % fonte Computer Modern ilegível
++ \usepackage{charter}                    % fonte Bitstream Charter (próxima a Cambria)
+
++ % Cabeçalhos de seção azuis com caixa alta e regra horizontal
++ \usepackage{xcolor}
++ \usepackage{titlesec}
++ \definecolor{lawblue}{HTML}{2E75B6}
++ \titleformat{\section}{\large\bfseries\color{lawblue}}{}{0em}{\MakeUppercase}
++   [\vspace{2pt}{\color{lawblue}\hrule height 0.8pt}\vspace{4pt}]
++ \titleformat{\subsection}{\normalsize\bfseries\color{lawblue}}{}{0em}{\MakeUppercase}
++ \titlespacing{\section}{0pt}{14pt}{6pt}
+
++ % Figuras: posicionamento forçado no lugar onde são referenciadas
++ \usepackage{graphicx}
++ \usepackage{float}
++ \floatplacement{figure}{H}
+
++ % Captions: sem "Figure N:", itálico, fonte pequena
++ \usepackage{caption}
++ \captionsetup[figure]{labelformat=empty, font={footnotesize,it}, skip=4pt}
+
++ % Número de página no canto inferior direito
++ \usepackage{fancyhdr}
++ \pagestyle{fancy}
++ \fancyhf{}
++ \fancyfoot[R]{\small\thepage}
++ \renewcommand{\headrulewidth}{0pt}
+
+- \pagestyle{plain}                       % removido — substituído por fancyhdr
+```
+
+**Nota sobre dependência de fonte — crítica:**
+`charter` requer `8r.enc` ausente em instalações TeX mínimas.
+Erro: `pdfTeX error: cannot open encoding file 8r.enc for reading`.
+**Solução:** `sudo dnf install texlive-collection-fontsrecommended` (Fedora).
+Sem esse pacote, usar `\usepackage{lmodern}` como fallback.
+
+**Template de referência preservado em:** `plugin/templates/base-legal.latex`
+(o arquivo em produção já inclui todas as correções acima)
+
+**Ação pendente:**
+- Adicionar ao `plugin/scripts/setup.sh` verificação e instalação de `texlive-collection-fontsrecommended`
+- Adicionar nota de pré-requisito no README
+
+---
+
+### P2. Imagens em petições — novo padrão e problema de tamanho
+
+**Status:** parcialmente implementado — padrão estabelecido, controle de tamanho pendente
+**Identificado em:** 2026-06-08/09
+
+**Novo padrão estabelecido:** Petições com fotos embutidas no corpo do documento
+(via markdown `![caption](path){width=X%}`) são muito mais eficazes — o juiz vê
+a prova antes de ler sobre ela. Esse formato deve ser **padrão** em todas as petições
+onde há evidência fotográfica relevante.
+
+**Problema pendente:** Imagens com aspect ratio vertical ocupam a página inteira
+e causam quebras de página indesejadas, mesmo com `width=78%`. Uma foto vertical
+de 3:4 a 78% de largura pode ocupar 100% da altura da página.
+
+**Solução a implementar no template:**
+```latex
+% Limitar imagens a no máximo 40% da altura da página, mantendo proporção
+\usepackage{graphicx}
+\setkeys{Gin}{width=\linewidth,height=0.40\textheight,keepaspectratio}
+```
+
+Isso garante que nenhuma imagem exceda 40% da altura da página, independente
+de quanto `width=X%` o markdown especificar.
+
+**Ação necessária:**
+- Adicionar `\setkeys{Gin}{height=0.40\textheight,keepaspectratio}` ao `base-legal.latex`
+- Testar com imagens verticais (ex: fotos de celular em portrait)
+- Atualizar skill `peticao` para orientar Dr. LawDog a incluir fotos relevantes
+  quando houver evidência fotográfica que suporte diretamente o argumento
+
+---
+
+### P3. Dr. LawDog não é a voz ativa — espera o usuário conduzir
+
+**Status:** não implementado
+**Identificado em:** 2026-06-08
+
+O agente aguardava perguntas em vez de conduzir proativamente. Em casos com prazo
+real, o advogado deve alertar riscos, orientar o próximo passo e sinalizar quando
+uma decisão do usuário é estrategicamente arriscada — sem ser perguntado.
+
+**Ação necessária — `plugin/AGENTS.md`:**
+*"Ao final de cada interação, oriente o próximo passo. Não espere o usuário perguntar.
+Se detectar risco estratégico em decisão do usuário, sinalize antes de executar.
+Você é o advogado — conduza."*
+
+---
+
+### P4. Skills com trigger não são chamadas — scripts manuais no lugar
+
+**Status:** não implementado
+**Identificado em:** 2026-06-08
+
+Quando o usuário mencionava ações com skills dedicadas (conversão de vídeo, imagem,
+juntada, petição), o agente criava scripts bash ad-hoc em vez de invocar a skill.
+
+**Ação necessária — `plugin/AGENTS.md`:**
+*"Antes de executar qualquer operação de arquivo, verificar se existe skill disponível.
+Se existe, invocar a skill — nunca substituir por script manual."*
+
+---
+
+### P5. Dr. LawDog não lê o caso antes de interagir
+
+**Status:** não implementado
+**Identificado em:** 2026-06-08
+
+O agente começou sem ler os documentos existentes do caso. O usuário precisou orientar
+manualmente a leitura de CLAUDE.md, caso.md e do PROJUDI.
+
+**Ação necessária — `protocols/case-intake.md` (Step 0):**
+*"Se caso.md existe, ler COMPLETAMENTE antes de qualquer interação: caso.md completo,
+journal.md (se existir), Estado atual, Movimentações, e ao menos os últimos 3
+documentos juntados. Nunca peça ao usuário para resumir o que você pode ler."*
+
+---
+
+### P6. Sem loop de revisão de petição — agente sai antes do usuário aprovar
+
+**Status:** não implementado
+**Identificado em:** 2026-06-08
+
+Após gerar o rascunho, o agente saiu do loop de revisão sem aguardar aprovação.
+
+**Protocolo correto a implementar — `plugin/skills/peticao/SKILL.md` (Phase 3):**
+1. Gerar rascunho → apresentar ao usuário
+2. Permanecer em loop explícito até receber "aprovar" ou instrução de abandono
+3. A cada ciclo: editar apenas a seção solicitada → mostrar o trecho editado → aguardar
+4. Só regenerar PDF quando o usuário pedir ou aprovar
+5. Lembrar ao final de cada resposta: *"Posso ajustar qualquer seção. Quando estiver satisfeito, diga aprovar."*
+6. Não mudar de assunto sem aprovação explícita
+
+---
+
+### P7. Ausência de task tracking — sessão sem estrutura de progresso
+
+**Status:** não implementado
+**Identificado em:** 2026-06-08
+
+Múltiplas tarefas correram em paralelo sem registro. Modelo correto (seguir superpowers):
+1. Criar tasks ANTES de começar qualquer fluxo com 3+ etapas
+2. Marcar `in_progress` ao iniciar cada task
+3. Permanecer na task até concluída — não avançar antes
+4. Marcar `completed` só quando realmente concluída
+5. Se usuário mudar de assunto: suspender explicitamente, registrar estado parcial
+
+**Ação necessária — `plugin/AGENTS.md`:**
+*"Para qualquer fluxo com 3+ etapas, criar tasks antes de começar. Uma task
+incompleta = permaneça nela. Siga o modelo do superpowers."*
+
+---
+
+### P8. Ausência de journal do caso — contexto narrativo não é preservado
+
+**Status:** proposta de arquitetura — não implementado
+**Identificado em:** 2026-06-08/09
+
+O `caso.md` registra fatos estruturados, mas não preserva o contexto narrativo que
+o usuário revela ao longo das sessões: estratégias discutidas, admissões capturadas,
+decisões tomadas, nuances do caso. Esse contexto se perde entre sessões e o usuário
+precisa reexplicar.
+
+**Proposta: `journal.md` como arquivo complementar ao `caso.md`**
+
+Localização: `$CASES_DIR/<slug>/journal.md` (raiz do caso, ao lado de caso.md)
+Natureza: append-only — entradas antigas nunca são editadas.
+
+Formato de cada entrada:
+```markdown
+## Sessão YYYY-MM-DD
+
+### Contexto revelado pelo usuário
+- [fatos novos, admissões, histórias relevantes contadas pelo usuário]
+
+### Decisões estratégicas tomadas
+- [o que foi decidido e por quê — inclui o que foi descartado e a razão]
+
+### Pendências abertas
+- [o que ficou por fazer, com contexto suficiente para retomar]
+
+### Avaliação Dr. LawDog
+[Notas estratégicas sobre o estado atual do caso]
+```
+
+**Como funciona:**
+- Dr. LawDog lê `journal.md` ao iniciar qualquer sessão do caso (junto com `caso.md`)
+- Ao final de cada sessão substantiva, escreve nova entrada datada
+- `caso.md` = arquivo estruturado (partes, timeline, fundamento jurídico)
+- `journal.md` = diário narrativo e estratégico (evolução, contexto, decisões)
+
+**Ações necessárias:**
+- Adicionar `journal.md` ao template de criação de caso em `protocols/file-structure.md`
+- Adicionar instrução no Step 0 de `protocols/case-intake.md` para ler o journal ao iniciar sessão
+- Adicionar instrução no `plugin/AGENTS.md` para escrever entrada ao final de sessão
+- Atualizar skill `caso` para criar `journal.md` em branco ao abrir novo caso
+
+---
+
 ## v0.4.0 — roadmap e ordem de implementação
 
 Quatro sub-projetos independentes, a serem executados nesta ordem:

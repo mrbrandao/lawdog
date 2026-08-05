@@ -1,14 +1,12 @@
 \documentclass[$if(fontsize)$$fontsize$$else$12pt$endif$,a4paper]{article}
 
-% Encoding and fonts — lmodern must precede fontenc to use its own ec-lm* fonts
-\usepackage{lmodern}
+% Font: Bitstream Charter — visually close to Cambria, excellent for legal docs
+\usepackage{charter}
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
-% microtype improves justification; omit if not installed (TeX Live minimal)
 \IfFileExists{microtype.sty}{\usepackage{microtype}}{}
 
-% Hyphenation: load babel only when a language is explicitly requested,
-% otherwise the missing babel-portuges package produces a non-fatal error.
+% Hyphenation
 $if(lang)$
 \usepackage[$lang$]{babel}
 $endif$
@@ -23,7 +21,6 @@ $endif$
 \setlength{\parskip}{0pt}
 
 % WIDOW AND ORPHAN CONTROL
-% 10000 = maximum penalty = never allow isolated lines.
 \widowpenalty=10000
 \clubpenalty=10000
 \displaywidowpenalty=10000
@@ -34,8 +31,38 @@ $endif$
 % Required by pandoc 3.x for compact lists
 \providecommand{\tightlist}{\setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
 
-% Plain page style (page number at bottom center only)
-\pagestyle{plain}
+% Blue section headers with horizontal rule (Brazilian legal document convention)
+\usepackage{xcolor}
+\usepackage{titlesec}
+\definecolor{lawblue}{HTML}{2E75B6}
+\titleformat{\section}
+  {\large\bfseries\color{lawblue}}{}{0em}{\MakeUppercase}
+  [\vspace{2pt}{\color{lawblue}\hrule height 0.8pt}\vspace{4pt}]
+\titleformat{\subsection}
+  {\normalsize\bfseries\color{lawblue}}{}{0em}{\MakeUppercase}
+\titleformat{\subsubsection}
+  {\normalsize\bfseries\color{lawblue}}{}{0em}{\MakeUppercase}
+\titlespacing{\section}{0pt}{14pt}{6pt}
+\titlespacing{\subsection}{0pt}{10pt}{4pt}
+
+% Figures: force [H] placement so images appear exactly where referenced
+% Max height 35% of page — prevents single-image pages from portrait photos
+\usepackage{graphicx}
+\usepackage{float}
+\floatplacement{figure}{H}
+\setkeys{Gin}{height=0.35\textheight,keepaspectratio}
+
+% Figure captions: italic, small, no "Figure N:" label
+\usepackage{caption}
+\captionsetup[figure]{labelformat=empty, font={footnotesize,it}, skip=4pt}
+
+% Page number at bottom right
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyfoot[R]{\small\thepage}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
 
 $for(header-includes)$
 $header-includes$
