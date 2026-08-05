@@ -1,11 +1,12 @@
 ---
 name: video2forum
 description: >-
-  Convert video files (.MOV, .MP4, .AVI, .MKV, etc.) to WebM format
-  required by Brazilian court systems (PROJUDI/TJPR) and legal forums.
-  Activate on: /lawdog:video2forum, convert videos for forum,
-  convert .mov to webm, videos for PROJUDI, forum video upload,
-  court-compatible video conversion.
+  Prepares video files for PROJUDI/TJPR upload: MP4/H.264+AAC (preferred, proven
+  PROJUDI-compatible) or WebM (fallback with --webm flag when forum rejects MP4).
+  Automatically detects if input is already H.264+AAC — passes through without
+  re-encoding to preserve quality. MOV, AVI, MKV, VP8/VP9: converted to MP4/H.264+AAC.
+  Activate on: /lawdog:video2forum, convert videos for forum, converter vídeo para
+  PROJUDI, vídeo para tribunal, videos for upload, court-compatible video.
 compatibility: >-
   Requires ffmpeg in PATH, or set FFMPEG=/path/to/ffmpeg.
   Static builds at https://johnvansickle.com/ffmpeg/ or
@@ -13,7 +14,7 @@ compatibility: >-
 allowed-tools: Bash
 metadata:
   author: mrbrandao
-  version: "1.1"
+  version: "1.2"
 ---
 
 ## Trigger
@@ -47,18 +48,20 @@ base name, overwriting if exists.
    message if no files matched.
 
 3. **Derive output path** for each file: same directory, same base
-   name, extension → `.webm`.
+   name, extension → `.mp4` (default) or `.webm` (with --webm flag).
 
 4. **Convert** all files in parallel — launch each conversion as a
    background task (`run_in_background: true`). Use:
    ```bash
+   FFMPEG="${FFMPEG:-$HOME/bin/ffmpeg}" \
    bash "${CLAUDE_SKILL_DIR}/scripts/video2forum.sh" \
-     -i "<input>" -o "<output>"
+     -i "<input>" -o "<output>.mp4"
    ```
-   With custom ffmpeg:
+   For WebM fallback (--webm):
    ```bash
-   FFMPEG="$FFMPEG" bash "${CLAUDE_SKILL_DIR}/scripts/video2forum.sh" \
-     -i "<input>" -o "<output>"
+   FFMPEG="${FFMPEG:-$HOME/bin/ffmpeg}" \
+   bash "${CLAUDE_SKILL_DIR}/scripts/video2forum.sh" \
+     -i "<input>" -o "<output>.webm" --webm
    ```
    Wait for all background tasks to finish before proceeding to Step 5.
 
@@ -77,5 +80,27 @@ context so the root cause is visible. On any failure:
 
 ## Format spec
 
-Output: VP8 video + Vorbis audio, WebM container, 500 kbps video,
-Vorbis quality 4. Matches PROJUDI/TJPR court system requirements.
+**Default output — MP4 (PROJUDI preferred):**
+- Container: MP4 with +faststart (browser streaming optimized)
+- Video: H.264, High Profile, Level 3.0, yuv420p, CRF 23 (~1-2Mbps)
+- Audio: AAC, 128kbps, 48kHz, stereo
+- Reference: format proven accepted by PROJUDI/TJPR
+
+**Passthrough:** if input is already H.264+AAC in MP4 container, copied
+directly without re-encoding. Zero quality loss, instant operation.
+
+**Fallback — WebM (--webm flag):**
+- Container: WebM, Video: VP8 500kbps, Audio: Vorbis quality 4
+- Use when: PROJUDI rejects the MP4 (rare — older court setups)
+
+**If MP4 is rejected by the forum, say in Portuguese:**
+> "O PROJUDI não aceitou o MP4? Use `--webm` para o formato legado:
+> `/lawdog:video2forum --webm <arquivo>`"
+
+**Output is silent during conversion** — no frame-by-frame progress.
+Only start, mode, and completion messages are shown. Real errors ARE
+printed so the agent can diagnose and advise the user.
+
+**Custom ffmpeg:** if `~/bin/ffmpeg` exists with full codec support,
+set `FFMPEG=~/bin/ffmpeg` before calling the script. The system ffmpeg
+may lack libx264.
