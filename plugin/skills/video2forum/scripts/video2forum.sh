@@ -68,7 +68,9 @@ echo "Processing: $INPUT → $OUTPUT" >&2
 if [[ "$WEBM" == "true" ]]; then
     # Mode: WebM fallback (VP8+Vorbis — legacy format for older PROJUDI setups)
     echo "  Mode: WebM/VP8+Vorbis (--webm fallback)" >&2
-    "$FFMPEG" -v quiet -stats \
+    # -loglevel error: suppresses frame-by-frame progress (avoids token flood)
+    # but prints real errors so the agent can diagnose and advise the user
+    "$FFMPEG" -nostdin -loglevel error \
         -i "$INPUT" \
         -c:v libvpx -quality good -cpu-used 5 -threads 4 -b:v 500k \
         -c:a libvorbis -q:a 4 \
@@ -84,7 +86,9 @@ else
     # Specs match reference file proven by PROJUDI: High Profile, Level 3.0,
     # CRF 23 (~1-2Mbps), AAC 128kbps 48kHz, +faststart for browser streaming
     echo "  Mode: convert to MP4/H.264+AAC" >&2
-    "$FFMPEG" -v quiet -stats \
+    # -loglevel error: suppresses frame-by-frame progress (avoids token flood)
+    # but prints real errors so the agent can diagnose and advise the user
+    "$FFMPEG" -nostdin -loglevel error \
         -i "$INPUT" \
         -c:v libx264 -profile:v high -level:v 3.0 -pix_fmt yuv420p \
         -crf 23 -threads 4 \
@@ -93,4 +97,10 @@ else
         -y "$OUTPUT"
 fi
 
-echo "Done: $OUTPUT" >&2
+if [[ -f "$OUTPUT" ]]; then
+    SIZE=$(stat -c%s "$OUTPUT" 2>/dev/null || stat -f%z "$OUTPUT")
+    echo "Done: $OUTPUT (${SIZE} bytes)" >&2
+else
+    echo "ERROR: Output not created — ffmpeg may have failed silently" >&2
+    exit 1
+fi
