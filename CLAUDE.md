@@ -87,6 +87,30 @@ All must pass before any commit.
 
 ---
 
+## Plugin versioning — when to bump and reinstall
+
+Any change that affects **observable behavior for the user** requires:
+1. Bump version in `plugin/.claude-plugin/plugin.json`
+2. Bump version in `plugin/.claude-plugin/marketplace.json`
+3. User must reinstall the plugin in Claude Code:
+   ```bash
+   /plugin uninstall lawdog
+   /plugin install /path/to/lawdog/plugin
+   ```
+
+**Changes requiring version bump + reinstall:**
+- Default output format of any skill changes (e.g., video2forum: WebM → MP4)
+- New skill added or existing skill removed
+- Session hook behavior changes
+- SKILL.md trigger phrases change (affects when skill activates)
+
+**Changes that do NOT require reinstall:**
+- Protocol or knowledge file updates (loaded at skill activation time)
+- Bug fixes that don't change observable behavior
+- BACKLOG and docs updates
+
+---
+
 ## Skill writing standards (agentskills.io)
 
 **Sources:**

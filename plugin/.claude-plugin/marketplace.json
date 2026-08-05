@@ -8,7 +8,7 @@
     {
       "name": "lawdog",
       "description": "Dr. Andre LawDog — advogado e magistrado para o JEC. Skills para gestão de casos, evidências, documentos judiciais e ciclo de vida processual no PROJUDI.",
-      "version": "0.4.0",
+      "version": "0.5.0",
       "source": "./",
       "author": {
         "name": "mrbrandao"
