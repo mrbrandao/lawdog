@@ -15,9 +15,32 @@ Quatro sub-projetos independentes, a serem executados nesta ordem:
 | B | Ciclo de vida do caso (ping-pong judicial) | ✅ Concluído (2026-06-04) | — |
 | C | Notificação extrajudicial | ✅ Concluído (2026-06-04) | — |
 | D | Ingestão de casos existentes | ✅ Concluído (2026-06-04) | B ✅ |
+| E | Redação de petições — `/lawdog:peticao` | ✅ Concluído (2026-06-08) | B ✅ |
 
 Cada sub-projeto tem seu próprio spec → plano → implementação.
 Atualizar esta tabela ao concluir cada um.
+
+---
+
+## skill: peticao — redação de petições
+
+**Status:** implementado — 2026-06-08
+**Localização:** `plugin/skills/peticao/SKILL.md`
+
+Suporta o ciclo completo de redação de petições:
+1. Rascunho automático — Dr. LawDog aplica Lente Tríplice (fatos, direito, pedidos)
+2. Refinamento orientado — usuário pode solicitar melhorias iterativas
+3. Aprovação explícita — só gera PDF após aprovação do usuário
+
+A skill:
+- Acessa `knowledge/` e `fetch-law/` para verificação de artigos
+- Gera `-rascunho.md` como edição segura
+- Suporta loops de refinamento sem risco de sobrescrita
+- Integra com o ciclo de vida do caso (ping-pong judicial)
+
+**Próximos passos:**
+- Implementar `/lawdog:movimentacao-2` para acompanhamento de outros tipos de movimentos processuais
+- Expandir `knowledge/` com artigos específicos para defesas de JEC
 
 ---
 
