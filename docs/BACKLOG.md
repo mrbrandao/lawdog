@@ -5,6 +5,51 @@ Melhorias identificadas, decisões pendentes e ideias para sessões futuras.
 
 ---
 
+## OpenCode support — 2026-08-05
+
+**Status:** implementado ✅
+**Spec:** `docs/superpowers/specs/2026-08-05-lawdog-opencode-design.md`
+
+### O que foi feito
+
+- `plugin/package.json` — descritor npm-style para OpenCode plugin
+- `plugin/.opencode/plugins/lawdog.js` — plugin entry point: registra skills via
+  `config` hook, injeta contexto Dr. LawDog via `experimental.chat.messages.transform`,
+  define `process.env.LAWDOG_PLUGIN_DIR` para scripts bash
+- `plugin/scripts/install-permissions.sh` — branch `opencode` adicionado: faz patch
+  de `opencode.json` com entrada `"plugin"` e escreve `AGENTS.md` a partir do template
+- `plugin/templates/lawdog-cases.AGENTS.md` — template path-agnostic para
+  `$LAWDOG_CASES_DIR/AGENTS.md`
+- 5 SKILL.md corrigidos (`juntada`, `img2pdf`, `doc2pdf`, `video2forum`, `pdf-split`):
+  `${CLAUDE_SKILL_DIR}` → `${CLAUDE_SKILL_DIR:-${LAWDOG_PLUGIN_DIR}/skills/<name>}`
+- `CLAUDE.md` — atualizado: arquitetura, path hygiene, OpenCode install, versão v0.5.0
+
+### Como instalar para OpenCode
+
+**Opção 1 — Nativo (recomendado):** editar `opencode.json` do projeto:
+```json
+{ "plugin": ["/path/to/lawdog/plugin"] }
+```
+
+**Opção 2 — Via lola:**
+```bash
+cd ~/lawdog-cases
+lola mod add /path/to/lawdog/plugin
+lola install lawdog -a opencode
+```
+
+### Melhoria futura: lola + OpenCode plugin nativo
+
+Atualmente o branch opencode do `install-permissions.sh` faz patch manual do
+`opencode.json`. A melhoria correta no lola seria:
+- Suporte nativo a `"plugin"` key em `lola.yaml` module config
+- `lola install lawdog -a opencode` adiciona a entrada automaticamente
+- `lola uninstall lawdog -a opencode` remove a entrada
+
+Contribuição a fazer: PR no lola com suporte a OpenCode plugin format.
+
+---
+
 ## Problemas identificados em sessão real — 2026-06-08/09
 
 **Contexto:** Sessão de importação do caso `obra-irregular-sobrado04` e redação da

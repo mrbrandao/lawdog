@@ -12,52 +12,67 @@ user messages in skills, legal knowledge texts) is in Portuguese.
 
 ## What lawdog is
 
-A plugin for AI assistants (Claude Code, Gemini, Cursor). Helps Brazilians file
-cases in the JEC (Juizado Especial Cível — small claims court) without a lawyer.
+A plugin for AI assistants (Claude Code, OpenCode, Gemini, Cursor). Helps Brazilians
+file cases in the JEC (Juizado Especial Cível — small claims court) without a lawyer.
 Lawdog acts as an experienced lawyer with magistrate background — knows CC, CDC,
 Lei 9.099/95 and how a judge evaluates a case.
 
-Active development branch: `main` (merged, all v0.4.0 work complete)
+Active development branch: `main`
 Main branch: `main`
-Current version: v0.4.0 (Dr. Andre LawDog identity, case lifecycle, importar-caso)
+Current version: v0.5.0 (OpenCode native plugin support, LAWDOG_PLUGIN_DIR, path hygiene)
 
 ---
 
 ## Architecture
 
 ```
-hooks/              ← plugin hooks (Claude Code, Cursor, Copilot CLI)
-    └── session-start   SessionStart: injects Dr. LawDog context, skills table,
-                        model selection guidance, active case detection
-AGENTS.md           ← persona core (who lawdog is — ~100 lines, constitution)
-    │
-    ├── protocols/  ← behavioral contracts (how lawdog acts)
-    │   ├── case-intake.md         intake flow: narrative→triage→gaps→adversarial→decision
-    │   ├── file-structure.md      directory naming (SINGLE SOURCE OF TRUTH)
-    │   ├── knowledge-sources.md   mandatory legal lookup order
-    │   └── document-standards.md  judicial document quality rules
-    │
-    ├── knowledge/  ← embedded legal knowledge base
-    │   ├── index.md               topic index → article → file
-    │   ├── codigo-civil-jec.md    verified articles: CC + CDC + Lei 9.099/95
-    │   └── court-portals.md       TJ/PROJUDI by state (PR complete, others pending)
-    │
-    └── skills/     ← invocable skills (/lawdog:<name>)
-        ├── caso/          full case intake + Step 0 state detection + importar-caso redirect
-        ├── fetch-law/     fetch updated article: WebFetch → fallback WebSearch
-        ├── video2forum/   video → WebM (PROJUDI/TJPR)
-        ├── img2pdf/       image → PDF (PEP 723, pillow-heif, quality reduction)
-        ├── doc2pdf/       document → PDF via pandoc+pdflatex or LibreOffice
-        ├── pdf-split/     PDF > LAWDOG_PDF_SIZE → parts (document PDFs only)
-        ├── doc2docx/      markdown → editable DOCX (inline pandoc)
-        ├── juntada/       evidence orchestrator (parallel dispatch, batch naming)
-        ├── movimentacao/  register court movements (PROJUDI PDF → caso.md update)
-        ├── importar-caso/ ingest existing unorganized cases (batch 20, iterative table)
-        └── peticao/       draft petition: rascunho → refinement → official PDF via doc2pdf
+plugin/
+├── .claude-plugin/     ← Claude Code plugin manifest (plugin.json, marketplace.json)
+├── .opencode/
+│   └── plugins/
+│       └── lawdog.js   ← OpenCode plugin entry point (config + transform hooks)
+├── package.json        ← OpenCode npm-style package descriptor
+├── AGENTS.md           ← persona core (who lawdog is — ~160 lines, constitution)
+├── lola.yaml           ← lola post-install hook (claude-code + opencode branches)
+├── hooks/              ← Claude Code hooks only
+│   ├── hooks.json          SessionStart hook definition
+│   └── session-start       bash script: injects Dr. LawDog context + active cases
+├── protocols/          ← behavioral contracts (how lawdog acts) — shared by all runtimes
+│   ├── case-intake.md         intake flow: narrative→triage→gaps→adversarial→decision
+│   ├── file-structure.md      directory naming (SINGLE SOURCE OF TRUTH)
+│   ├── knowledge-sources.md   mandatory legal lookup order
+│   └── document-standards.md  judicial document quality rules
+├── knowledge/          ← embedded legal knowledge base — shared by all runtimes
+│   ├── index.md               topic index → article → file
+│   ├── codigo-civil-jec.md    verified articles: CC + CDC + Lei 9.099/95
+│   └── court-portals.md       TJ/PROJUDI by state (PR complete, others pending)
+├── templates/
+│   ├── base-legal.latex           pandoc LaTeX template for judicial documents
+│   └── lawdog-cases.AGENTS.md     path-agnostic workspace AGENTS.md template
+├── scripts/
+│   ├── install-permissions.sh     lola post-install: claude-code permissions + opencode bridge
+│   └── setup.sh                   interactive bootstrap: LAWDOG_CASES_DIR, deps
+└── skills/             ← invocable skills (/lawdog:<name>) — shared by all runtimes
+    ├── caso/          full case intake + Step 0 state detection + importar-caso redirect
+    ├── fetch-law/     fetch updated article: WebFetch → fallback WebSearch
+    ├── video2forum/   video → MP4/WebM (PROJUDI/TJPR)
+    ├── img2pdf/       image → PDF (PEP 723, pillow-heif, quality reduction)
+    ├── doc2pdf/       document → PDF via pandoc+pdflatex or LibreOffice
+    ├── pdf-split/     PDF > LAWDOG_PDF_SIZE → parts (document PDFs only)
+    ├── doc2docx/      markdown → editable DOCX (inline pandoc)
+    ├── juntada/       evidence orchestrator (parallel dispatch, batch naming)
+    ├── movimentacao/  register court movements (PROJUDI PDF → caso.md update)
+    ├── importar-caso/ ingest existing unorganized cases (batch 20, iterative table)
+    └── peticao/       draft petition: rascunho → refinement → official PDF via doc2pdf
 ```
 
 **Principle:** AGENTS.md defines character. Protocols define behavior. Skills
 import only the protocols they need — never read AGENTS.md directly.
+
+**Dual-runtime:** Claude Code uses `CLAUDE_PLUGIN_ROOT` + `CLAUDE_SKILL_DIR` env
+vars. OpenCode uses `LAWDOG_PLUGIN_DIR` set by `lawdog.js` at plugin load time.
+SKILL.md files that run scripts use the fallback pattern:
+`${CLAUDE_SKILL_DIR:-${LAWDOG_PLUGIN_DIR}/skills/<name>}`
 
 ---
 
@@ -87,6 +102,23 @@ All must pass before any commit.
 
 ---
 
+## Path hygiene — committed files must not leak personal paths
+
+Lawdog is open source. Any file committed to the repo — including plans, specs,
+docs, scripts, and SKILL.md files — must work read by any developer on any machine.
+
+| Avoid | Use instead |
+|---|---|
+| `/home/<username>/` in any file | `~/` or `$HOME/` in bash; `<your-home>` in docs |
+| `/home/<username>/dev/lawdog` | `<repo-root>` or `$(git rev-parse --show-toplevel)` |
+| Hardcoded username in grep patterns | `grep -E '/home/[^/]+/dev/'` |
+| Absolute path in expected output examples | `<repo-root>/plugin` |
+
+**If you find a hardcoded personal path in any committed file, fix it immediately.**
+Run `git log --all -p | grep '/home/' | grep -v 'home/user'` to audit history.
+
+---
+
 ## Plugin versioning — when to bump and reinstall
 
 Any change that affects **observable behavior for the user** requires:
@@ -98,7 +130,14 @@ Any change that affects **observable behavior for the user** requires:
    /plugin install /path/to/lawdog/plugin
    ```
 
-**Changes requiring version bump + reinstall:**
+**For OpenCode**, the plugin is registered in `opencode.json`:
+```json
+{ "plugin": ["/absolute/path/to/lawdog/plugin"] }
+```
+Or via lola: `lola install lawdog -a opencode` (run inside `~/lawdog-cases`).
+OpenCode picks up plugin changes on restart — no reinstall step needed.
+
+**Changes requiring version bump + reinstall (Claude Code):**
 - Default output format of any skill changes (e.g., video2forum: WebM → MP4)
 - New skill added or existing skill removed
 - Session hook behavior changes
