@@ -1,0 +1,10 @@
+{
+  "name": "lawdog",
+  "version": "0.5.0",
+  "description": "Dr. Andre LawDog — AI legal assistant for Brazilian JEC court workflows.",
+  "type": "module",
+  "main": ".opencode/plugins/lawdog.js",
+  "keywords": ["lawdog", "jec", "brasil", "legal", "skills"],
+  "author": "mrbrandao",
+  "license": "MIT"
+}
