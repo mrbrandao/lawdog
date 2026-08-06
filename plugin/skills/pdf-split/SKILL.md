@@ -26,7 +26,8 @@ Invoked by `/lawdog:doc2pdf` or `/lawdog:juntada` when a document PDF exceeds
 1. Run:
 
 ```bash
-uv run "${CLAUDE_SKILL_DIR}/scripts/pdf_split.py" \
+LAWDOG_SKILL="${CLAUDE_SKILL_DIR:-${LAWDOG_PLUGIN_DIR}/skills/pdf-split}"
+uv run "${LAWDOG_SKILL}/scripts/pdf_split.py" \
     -i "<input.pdf>" -o "<output-prefix>"
 ```
 

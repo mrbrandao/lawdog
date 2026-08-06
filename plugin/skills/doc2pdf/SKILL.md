@@ -29,9 +29,10 @@ Invoked by `/lawdog:juntada` for documents. Direct use: `/lawdog:doc2pdf`
 1. Run:
 
 ```bash
-uv run "${CLAUDE_SKILL_DIR}/scripts/doc2pdf.py" \
+LAWDOG_SKILL="${CLAUDE_SKILL_DIR:-${LAWDOG_PLUGIN_DIR}/skills/doc2pdf}"
+uv run "${LAWDOG_SKILL}/scripts/doc2pdf.py" \
     -i "<input>" -o "<output>" \
-    -t "${CLAUDE_SKILL_DIR}/../../templates/base-legal.latex"
+    -t "${LAWDOG_SKILL}/../../templates/base-legal.latex"
 ```
 
 2. Check output size against `LAWDOG_PDF_SIZE`:

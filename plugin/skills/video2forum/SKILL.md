@@ -53,14 +53,15 @@ base name, overwriting if exists.
 4. **Convert** all files in parallel — launch each conversion as a
    background task (`run_in_background: true`). Use:
    ```bash
+   LAWDOG_SKILL="${CLAUDE_SKILL_DIR:-${LAWDOG_PLUGIN_DIR}/skills/video2forum}"
    FFMPEG="${FFMPEG:-$HOME/bin/ffmpeg}" \
-   bash "${CLAUDE_SKILL_DIR}/scripts/video2forum.sh" \
+   bash "${LAWDOG_SKILL}/scripts/video2forum.sh" \
      -i "<input>" -o "<output>.mp4"
    ```
    For WebM fallback (--webm):
    ```bash
    FFMPEG="${FFMPEG:-$HOME/bin/ffmpeg}" \
-   bash "${CLAUDE_SKILL_DIR}/scripts/video2forum.sh" \
+   bash "${LAWDOG_SKILL}/scripts/video2forum.sh" \
      -i "<input>" -o "<output>.webm" --webm
    ```
    Wait for all background tasks to finish before proceeding to Step 5.

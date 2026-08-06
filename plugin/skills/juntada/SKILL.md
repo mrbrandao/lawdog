@@ -38,12 +38,13 @@ ANEXOS="$CASES_DIR/$1/$PETICAO/anexos"
 JUNTADA="$CASES_DIR/$1/$PETICAO/juntada"
 DOCS="$CASES_DIR/$1/$PETICAO/docs"
 
-uv run "${CLAUDE_SKILL_DIR}/scripts/juntada.py" list-pending "$ANEXOS"
+LAWDOG_SKILL="${CLAUDE_SKILL_DIR:-${LAWDOG_PLUGIN_DIR}/skills/juntada}"
+uv run "${LAWDOG_SKILL}/scripts/juntada.py" list-pending "$ANEXOS"
 ```
 
 If user provided external paths: copy each to `$ANEXOS` first:
 ```bash
-DEST=$(uv run "${CLAUDE_SKILL_DIR}/scripts/juntada.py" resolve-conflict "$ANEXOS/<filename>")
+DEST=$(uv run "${LAWDOG_SKILL}/scripts/juntada.py" resolve-conflict "$ANEXOS/<filename>")
 cp "<external-path>" "$DEST"
 ```
 External originals are never touched.
@@ -100,9 +101,9 @@ Image PDFs >MAX: img2pdf already handled quality reduction — no split.
 ### Step 6 — Copy to juntada/ and tag
 
 ```bash
-DEST=$(uv run "${CLAUDE_SKILL_DIR}/scripts/juntada.py" resolve-conflict "$JUNTADA/<NN-name.ext>")
+DEST=$(uv run "${LAWDOG_SKILL}/scripts/juntada.py" resolve-conflict "$JUNTADA/<NN-name.ext>")
 cp "<converted-file>" "$DEST"
-uv run "${CLAUDE_SKILL_DIR}/scripts/juntada.py" tag "<original-in-anexos>"
+uv run "${LAWDOG_SKILL}/scripts/juntada.py" tag "<original-in-anexos>"
 ```
 
 External files: only `cp`, no tag on original.

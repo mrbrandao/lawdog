@@ -27,7 +27,8 @@ Direct use: `/lawdog:img2pdf -i <input.jpg> -o <output.pdf>`
 1. Run the script:
 
 ```bash
-uv run "${CLAUDE_SKILL_DIR}/scripts/image_to_pdf.py" -i "<input>" -o "<output>"
+LAWDOG_SKILL="${CLAUDE_SKILL_DIR:-${LAWDOG_PLUGIN_DIR}/skills/img2pdf}"
+uv run "${LAWDOG_SKILL}/scripts/image_to_pdf.py" -i "<input>" -o "<output>"
 ```
 
 2. If script prints `WARNING: Cannot reduce below`:
